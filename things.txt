@@ -1,0 +1,350 @@
+https://ionic.io/ionicons/v2#cdn
+
+
+
+  // $(".remove-item").click((e) => {
+   
+
+  //   let itemId = parseInt(e.target.getAttribute("data-id"));
+  //   let itemColor = e.target.getAttribute("data-color");
+  //   let itemModel = e.target.getAttribute("data-model");
+
+  //   $(`li[data-id='${itemId}'][data-color='${itemColor}'][data-model='${itemModel}']`).hide()
+  //   console.log($(`li[data-id='${itemId}'][data-color='${itemColor}'][data-model='${itemModel}']`))
+
+
+  //   // -------------
+  //   let hasSameId = inCartNow.filter((item) => item.id === itemId);
+
+  //   if (hasSameId.length === 1) {
+  //     inCartNow = inCartNow.filter((item) => item.id !== itemId);
+  //     localStorage.setItem('cart', JSON.stringify(inCartNow))
+  //   } else {
+  //     console.log(itemColor);
+  //     console.log(itemModel);
+  //     console.log(inCartNow);
+
+  //     inCartNow = inCartNow.filter(
+  //       (item) =>
+  //         item.id !== itemId ||
+  //         (item.id === itemId && item.colors !== itemColor) ||
+  //         item.model !== itemModel
+  //     );
+  //     localStorage.setItem('cart', JSON.stringify(inCartNow))
+
+  //     console.log(inCartNow);
+  //   }
+  // });
+
+
+
+
+
+
+  //----------
+
+  $(function () {
+  let product = JSON.parse(localStorage.getItem("product"));
+  if (product) {
+    $(".product-img").html(`
+    <img src="${product.img}" width="500" height="500" class="pro-img">
+    `);
+
+    $(".product-details").html(`
+    <h3>${product.name}</h3>
+    <p>${product.price} <span>ريال</span></p>
+    <p>${product.des}</p>
+    <form>
+    <table class="table table-bordered">
+    <tbody>
+       <tr>
+        <td class="col-2 offset-2">الموديل</td>
+        <td class="col-6">
+        <div class="input-group">
+        <select class="custom-select">
+            <option>حدد</option>
+            <option>${product.model[0]}</option>
+            <option>${product.model[1]}</option>
+            </select>
+        </div>
+        </td>
+        </tr>
+        <tr>
+        <td class="col-2 offset-2" id="color">اللون</td>
+        <td class="col-6">
+        <ul class="colors-container">
+        </ul>
+        </td>
+        </tr>
+    </tbody>
+    </table>
+
+    <div class="input-group">
+      <button class="btn btn-secondary col-8 buy-now" type="submit" disabled>اشتر</button>
+      <input type="number" class="form-control col-2 offset-2 quentity" min="1" value="1">
+    </div>
+    </form>
+    `);
+
+    product.colors.map((color) => {
+      let colorClass;
+      if (color === "silver") {
+        colorClass = "silver";
+      } else if (color === "space gray") {
+        colorClass = "space-gray";
+      } else if (color === "gold") {
+        colorClass = "gold";
+      }
+      $(".colors-container").append(`
+          <li class="chose-color">
+             <span class='${colorClass}' data-bs-toggle="tooltip" data-bs-placement="top" title="${color}" data-color='${color}'></span>
+          </li>
+          `);
+    });
+  }
+
+  // what is the model ?
+  $(".custom-select").change(function () {
+    localStorage.setItem("model", $(this).val());
+
+    let color = localStorage.getItem("chosenColor");
+    let model = localStorage.getItem("model");
+
+    tracker(color, model);
+  });
+
+  // What is the color?
+
+  $(".chose-color").click(function () {
+    let chosenColor = $(this).children().data("color");
+
+    if ($(this).data("clicked")) {
+      localStorage.setItem("chosenColor", "");
+      $(this).removeClass("chosen");
+      $(this).removeData("clicked");
+    } else if (!$(this).data("clicked")) {
+      // delete this thisng from brfore clicked elemnt
+      $(".chose-color").removeData("clicked");
+      $(".chose-color").removeClass("chosen");
+
+      // Now clicked
+      $(this).data("clicked", true);
+      localStorage.setItem("chosenColor", chosenColor);
+      $(this).addClass("chosen");
+    }
+
+    let color = localStorage.getItem("chosenColor");
+    let model = localStorage.getItem("model");
+    tracker(color, model);
+  });
+
+  // ----- Cart -----
+
+  // Tracker color and model
+  let inCartNow = JSON.parse(localStorage.getItem("cart")) || [];
+
+  function tracker(color, model) {
+    let alllProducts = JSON.parse(localStorage.getItem("cart")) || [];
+
+    if (color !== "" && model !== "" && model !== "حدد") {
+      $("form button").attr("disabled", false);
+
+      $("form").submit(function (e) {
+        e.preventDefault();
+        let object = JSON.parse(localStorage.getItem("product"));
+        let correctColor = localStorage.getItem("chosenColor");
+        let correctModel = localStorage.getItem("model");
+
+
+        let newObj = {
+          ...object,
+          quintiti: $(".quentity").val(),
+          price: parseInt(object.price) * parseInt($(".quentity").val()),
+          colors: correctColor,
+          model: correctModel,
+        };
+
+        let sameElemFounded = alllProducts.filter(
+          (item) => item.id === object.id
+        );
+
+        if (sameElemFounded.length === 0) {
+          alllProducts.push(newObj);
+        }
+
+        if (sameElemFounded.length > 0) {
+          let colorIsSame = sameElemFounded.filter(
+            (item) => item.colors === correctColor
+          );
+          let modelIsSame = sameElemFounded.filter(
+            (item) => item.model === correctModel
+          );
+
+          if (colorIsSame.length === 0 && modelIsSame.length === 0) {
+            alllProducts.push(newObj);
+          }
+
+          let productIsThere = sameElemFounded.find(
+            (item) =>
+              item.colors === correctColor && item.model === correctModel
+          );
+
+          if (!productIsThere) {
+            alllProducts.push(newObj);
+          }
+
+          if (productIsThere) {
+            let oldProQuen = productIsThere.quintiti;
+            let oldProPrice = productIsThere.price;
+            alllProducts = alllProducts.filter(
+              (item) =>
+                (!(
+                  item.colors === productIsThere.colors &&
+                  item.model === productIsThere.model
+                ) &&
+                  item.id === productIsThere.id) ||
+                item.id !== productIsThere.id
+            );
+            //تم التعديل على الكمية فقط
+            newObj = {
+              ...object,
+              quintiti: parseInt($(".quentity").val()) + parseInt(oldProQuen),
+              colors: correctColor,
+              model: correctModel,
+              price: parseInt(object.price) + parseInt(oldProPrice),
+            };
+            alllProducts.push(newObj);
+          }
+        }
+
+        localStorage.setItem("cart", JSON.stringify(alllProducts));
+
+        $("#salla").text(JSON.parse(localStorage.getItem("cart")).length);
+
+        // Modal
+        $(".modal").modal("show");
+        $(".modal-cart-items").html("");
+        inCartNow = JSON.parse(localStorage.getItem("cart"));
+
+        $(".total").html(`
+        <p>المجموع :</p>
+        <p> ${calcTotal(inCartNow)} ريال</p>`);
+
+        cartSide(inCartNow);
+      });
+    } else {
+      $("form button").attr("disabled", true);
+    }
+  }
+
+  // Calc Total:
+  function calcTotal(array) {
+    let total = array.reduce((accumelator, element) => {
+      return accumelator + parseInt(element.price);
+    }, 0);
+    return total;
+  }
+  if (inCartNow.length === 0) {
+    $(".total").html(`<p></p>`);
+    $(".modal-cart-items").html(
+      '<p class="empty-cart">لا توجد منتجات في السلة</p>'
+    );
+  } else {
+    $(".total").html(`
+        <p>المجموع :</p>
+        <p> ${calcTotal(inCartNow)} ريال</p>`);
+  }
+
+  //
+  function cartSide(inCartNow) {
+  console.log(inCartNow)
+
+    let a;
+    inCartNow.map((item, index) => {
+      let modelStr = item.model
+      let capacity = modelStr.match(/\d\d\dGB/)[0]
+
+
+      $(".modal-cart-items").append(`
+      <li class="modal-cart-item" data-id="${item.id}" data-color="${item.colors}" data-model="${item.model}">
+      <ion-icon name="close-outline" class="remove-item" data-id="${item.id}" data-color="${item.colors}" data-model="${item.model}" data-price="${item.price}"></ion-icon>
+      <div>
+        <img class="modal-product-img" src="${item.img}" alt="">
+      </div>
+      <div class="modal-cart-item-info">
+        <p class="modal-product-name">${item.name}</p>
+        <ul>
+         <li>السعة: ${capacity}</li>
+         <li> اللون: ${item.colors}</li>
+        </ul>
+        <div class="cart-price-qui">
+          <div>
+          الكمية
+          <span>${item.quintiti}</span>
+          </div>
+          <div class="modal-price">${item.price} ريال</div>
+        </div>
+      </div>
+    </li>
+  `);
+    });
+    $(".remove-item").click((e) => removeItem(e));
+  }
+  // remove item from Cart
+  function removeItem(e) {
+
+    let itemId = parseInt(e.target.getAttribute("data-id"));
+    let itemColor = e.target.getAttribute("data-color");
+    let itemModel = e.target.getAttribute("data-model");
+    let itemPrice = e.target.getAttribute("data-price");
+
+
+
+
+    let oldTotal = $('.total p').last().text()
+
+    $(
+      `li[data-id='${itemId}'][data-color='${itemColor}'][data-model='${itemModel}']`
+    ).hide();
+
+    let hasSameId = inCartNow.filter((item) => item.id === itemId);
+
+    if (hasSameId.length === 1) {
+      inCartNow = inCartNow.filter((item) => item.id !== itemId);
+      localStorage.setItem("cart", JSON.stringify(inCartNow));
+    } else {
+      inCartNow = inCartNow.filter(
+        (item) =>
+          item.id !== itemId ||
+          (item.id === itemId && item.colors !== itemColor) ||
+          item.model !== itemModel
+      );
+      localStorage.setItem("cart", JSON.stringify(inCartNow));
+    }
+    $('#salla').text(inCartNow.length)
+
+    if (inCartNow.length === 0) {
+      $(".total").html(`<p></p>`);
+      $(".modal-cart-items").html(
+        '<p class="empty-cart">لا توجد منتجات في السلة</p>'
+      );
+    } else {
+      $(".total").html(`
+          <p>المجموع :</p>
+          <p> ${parseInt(oldTotal)-parseInt(itemPrice)} ريال</p>`);
+    }
+  }
+
+  cartSide(inCartNow);
+  console.log(inCartNow)
+
+  // Tooltip
+  $('[data-bs-toggle="tooltip"]').tooltip();
+
+  // on page refresh remove color
+  window.onbeforeunload = function () {
+    localStorage.setItem("chosenColor", "");
+    localStorage.setItem("model", "");
+    return;
+  };
+});

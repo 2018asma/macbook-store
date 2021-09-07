@@ -1,0 +1,51 @@
+/* contact page */
+
+.form-wrapper{
+    margin-bottom: 2rem;
+    padding: 3.5rem;
+  }
+  
+  .contact-heading{
+    margin-bottom: 1rem;
+  
+  }
+  
+  .contact-heading h2{
+    font-size: 24px;
+  }
+  .contact-heading p{
+    font-size: 16px;
+  }
+  
+  .form-control{
+    height: 45px;
+    padding: 8px 10px;
+    border-radius: 0;
+    font-size: 14px;
+    font-weight: 300;
+    border-color: #e7e7e7;
+  }
+  .form-control::placeholder{
+    color: #bababa;
+  }
+  label{
+    font-size: 14px;
+    font-weight: 300;
+    color: #777777;
+  }
+
+  button.btn:not(.order-done){
+      background-color: #000;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 300;
+  }
+
+form{
+  margin-bottom: 2rem;
+}
+.alert{
+  /* display: block; */
+  
+}
+  
